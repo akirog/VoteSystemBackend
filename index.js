@@ -64,8 +64,8 @@ if (generate_codes) {
 
 
 let votes = {
-    "kandidat1": 0,
-    "kandidat2": 0,
+    "bib": 0,
+    "john": 0,
 };
 
 const server = http.createServer((req, res) => {

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Voting system</title>
+</head>
+<body>
+    <header>
+        <h1>VOTE SYSTEM</h1>
+    </header>
+    <main>
+        <div class="container">
+            <h1>Place your vote now!</h1>
+            <button class="v-button" data-candidate="john">John</button>
+            <button class="v-button" data-candidate="bib">Bib</button>
+            <input placeholder="Write your single use code" id="code" data-code>
+            <button id="submit-vote" type="submit">Send in vote</button>
+        </div>
+    </main>
+    <script>
+        let candidate = null
+        let code = null
+
+        console.log("hello"); 
+        
+        document.querySelectorAll(".v-button").forEach(
+                card =>{card.addEventListener("click", e => VoteCast(e))
+            });
+        document.getElementById("submit-vote").addEventListener("submit", e => (VoteCast(e)))
+
+        function VoteCast(e){
+                e.preventDefault();
+ 
+
+                candidate = e.currentTarget.dataset["candidate"]
+                console.log(e.currentTarget.dataset["candidate"])
+
+                document.querySelectorAll(".v-button").forEach(btn =>{
+                    btn.classList.remove("active")
+                });
+                e.currentTarget.classList.add("active");
+                }
+        
+        document.getElementById("submit-vote").addEventListener("click", ()=>{
+            let code = document.getElementById("code").value
+
+            const response = fetch("http://10.58.176.157:3000/vote", {
+                method: "POST",
+                body: JSON.stringify({ code: code, kandidat: candidate })
+            })
+
+            console.log("submitted")
+        })
+    </script>
+</body>
+</html>
