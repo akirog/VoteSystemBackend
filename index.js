@@ -8,17 +8,15 @@ const fs = require('node:fs/promises');
 function get_codes() {
     fs.readFile('./codes.txt', 'utf8', (err, data) => {
         if (err) {
-            console.log(err);
+            console.log("err");
             return {};
         } else {
-            if (data === "") {
-                return {};
-            }
-
-            console.log({});
+            console.log("parsed");
             return JSON.parse(data);
         }
     })
+    console.log("Skipped")
+    return {};
 }
 
 function get_code(id) {
@@ -35,7 +33,7 @@ function update_codes(data) {
     fs.writeFile('./codes.txt', JSON.stringify(data));
 }
 
-let generate_codes = true;
+let generate_codes = false;
 
 if (generate_codes) {
     let codes = get_codes();
@@ -70,10 +68,8 @@ let votes = {
     "kandidat2": 0,
 };
 
-// 2. Create the server and define the request-response behavior
 const server = http.createServer((req, res) => {
 
-    // Handle a GET request to the homepage
     if (req.method === 'GET' && req.url === '/') {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.write('Welcome to the homepage!');
@@ -96,11 +92,16 @@ const server = http.createServer((req, res) => {
             try {
                 let parsedBody = JSON.parse(body);
 
-                if (!parsedBody.code || !codes[parseInt(parsedBody.code)] || codes[parseInt(parsedBody.code)].used) {
+                if (!parsedBody) {
+                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.end("Error: Invalid body");
+                }
+
+                if (!parsedBody.code || !get_code(parseInt(parsedBody.code)) || get_code(parseInt(parsedBody.code)).used) {
                     res.writeHead(200, { 'Content-Type': 'text/plain' });
                     res.end("Error: Invalid code");
 
-                } else if (parsedBody && parsedBody.kandidat in votes) {
+                } else if (parsedBody.kandidat && parsedBody.kandidat in votes) {
                     votes[parsedBody.kandidat] += 1;
 
                     res.writeHead(200, { 'Content-Type': 'text/plain' });
