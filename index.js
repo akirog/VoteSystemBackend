@@ -2,68 +2,77 @@ const http = require('http');
 const fs = require('node:fs/promises');
 
 
-// Seperate classes codes and candidates
-// Array all letters and stuff for codes
+// Separate classes codes and candidates
 
-function get_codes() {
-    fs.readFile('./codes.txt', 'utf8', (err, data) => {
-        if (err) {
-            console.log("err");
-            return {};
-        } else {
-            console.log("parsed");
-            return JSON.parse(data);
-        }
-    })
-    console.log("Skipped")
-    return {};
+const code_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+
+
+async function get_votes() {
+    const data = await fs.readFile('./codes.txt', 'utf8');
+
+    if (data == null) {
+        return {};
+    }
+
+    return JSON.parse(data);
 }
 
-function get_code(id) {
-    let codes = get_codes();
+function get_vote(id) {
+    let votes = get_votes();
 
-    if (!codes[id]) {
+    if (!votes[id]) {
         return {};
     } else {
-        return codes[id];
+        return votes[id];
     }
 }
 
-function update_codes(data) {
-    fs.writeFile('./codes.txt', JSON.stringify(data));
+async function update_votes(data) {
+    await fs.writeFile('./codes.txt', JSON.stringify(data, null, '\t'));
 }
 
-let generate_codes = false;
+let generate_votes = false;
 
-if (generate_codes) {
-    let codes = get_codes();
+if (generate_votes) {
+    generate_new_votes().then();
+}
 
-    console.log(codes);
+async function generate_new_votes() {
+    let votes = {};
 
     for (let i = 0; i < 100; i++) {
         let retry = true;
-        let code = {};
+        let vote = {};
 
         while (retry) {
-            code = {
-                "pass": Math.floor(Math.random() * 10000),
-                "class": Math.floor(i/100 * 3),
+            let code = []
+
+            for (let j = 0; j < 5; j++) {
+                code.push(code_characters.charAt(Math.floor(Math.random() * code_characters.length)));
+            }
+
+            code = code.join('');
+
+            vote = {
+                "code": code,
+                "class": Math.floor(i/100 * 4),
                 "used": false,
             }
 
-            if (!codes[code.pass]) { retry = false; }
+            if (!votes[vote.code]) { retry = false; }
         }
 
-        codes[code.pass] = code;
+        votes[vote.code] = vote;
 
     }
 
-    update_codes(codes);
+    await update_votes(votes);
 }
 
 
 
-let votes = {
+
+let candidates = {
     "kandidat1": 0,
     "kandidat2": 0,
 };
@@ -74,8 +83,8 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.write('Welcome to the homepage!');
 
-        for (let k in votes) {
-            res.write('\n' + k + ' : ' + votes[k]);
+        for (let k in candidates) {
+            res.write('\n' + k + ' : ' + candidates[k]);
         }
 
         res.end();
@@ -97,17 +106,18 @@ const server = http.createServer((req, res) => {
                     res.end("Error: Invalid body");
                 }
 
-                if (!parsedBody.code || !get_code(parseInt(parsedBody.code)) || get_code(parseInt(parsedBody.code)).used) {
+                if (!parsedBody.code || !get_vote(parseInt(parsedBody.code)) || get_vote(parseInt(parsedBody.code)).used) {
                     res.writeHead(200, { 'Content-Type': 'text/plain' });
                     res.end("Error: Invalid code");
 
-                } else if (parsedBody.kandidat && parsedBody.kandidat in votes) {
-                    votes[parsedBody.kandidat] += 1;
+                } else if (parsedBody.kandidat && parsedBody.kandidat in candidates) {
+                    candidates[parsedBody.kandidat] += 1;
 
                     res.writeHead(200, { 'Content-Type': 'text/plain' });
                     res.end('Vote submitted');
 
                 }  else {
+
                     res.writeHead(400, { 'Content-Type': 'text/plain' });
                     res.end('Error: Invalid candidate');
                 }
