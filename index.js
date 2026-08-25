@@ -7,6 +7,8 @@ const fs = require('node:fs/promises');
 const code_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
 
+let code_counter = 0;
+
 async function get_votes() {
     const data = await fs.readFile('./codes.txt', 'utf8');
 
@@ -45,13 +47,11 @@ async function generate_new_votes() {
         let vote = {};
 
         while (retry) {
-            let code = []
+            let code = '';
 
             for (let j = 0; j < 5; j++) {
-                code.push(code_characters.charAt(Math.floor(Math.random() * code_characters.length)));
+                code += code_characters.charAt(Math.floor(Math.random() * code_characters.length));
             }
-
-            code = code.join('');
 
             vote = {
                 "code": code,
@@ -80,7 +80,7 @@ let candidates = {
 const server = http.createServer((req, res) => {
 
     if (req.method === 'GET' && req.url === '/') {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.writeHead(200, {'Content-Type': 'text/plain'});
         res.write('Welcome to the homepage!');
 
         for (let k in candidates) {
@@ -88,6 +88,34 @@ const server = http.createServer((req, res) => {
         }
 
         res.end();
+    }
+    else if (req.method === 'GET' && req.url === '/code') {
+        let data = '';
+
+        req.on('data', (chunk) => { data += chunk; });
+
+        req.on('end', async () => {
+            let body = JSON.parse(data);
+
+            const get_code_password = "gimme_password";
+
+            if (!body.password || body.password.length < 1 || body.password !== get_code_password) {
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end("Error: Invalid password");
+            } else if (code_counter > get_votes().length) {
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end("Error: No votes left");
+            } else {
+                let codes = await get_votes();
+
+                let code = codes.keys()[code_counter];
+                code_counter++;
+
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end("Code: " + code);
+            }
+
+        })
     }
     else if (req.method === 'POST' && req.url === '/vote') {
         let body = '';
