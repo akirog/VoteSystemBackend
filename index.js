@@ -125,28 +125,32 @@ const server = http.createServer((req, res) => {
             body += chunk.toString();
         })
 
-        req.on('end', () => {
+        req.on('end', async () => {
             try {
                 let parsedBody = JSON.parse(body);
 
                 if (!parsedBody) {
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end("Error: Invalid body");
                 }
 
                 if (!parsedBody.code || !get_vote(parseInt(parsedBody.code)) || get_vote(parseInt(parsedBody.code)).used) {
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end("Error: Invalid code");
 
                 } else if (parsedBody.kandidat && parsedBody.kandidat in candidates) {
                     candidates[parsedBody.kandidat] += 1;
 
-                    res.writeHead(200, { 'Content-Type': 'text/plain' });
+                    let votes = await get_votes();
+                    votes[parsedBody.code].used = true;
+                    await update_votes(votes);
+
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end('Vote submitted');
 
-                }  else {
+                } else {
 
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
+                    res.writeHead(400, {'Content-Type': 'text/plain'});
                     res.end('Error: Invalid candidate');
                 }
 
@@ -154,10 +158,9 @@ const server = http.createServer((req, res) => {
             } catch (e) {
                 console.error(e);
 
-                res.writeHead(400, { 'Content-Type': 'text/plain' });
+                res.writeHead(400, {'Content-Type': 'text/plain'});
                 res.end('Error: Invalid JSON payload');
             }
-
 
 
         })
