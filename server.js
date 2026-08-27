@@ -49,7 +49,7 @@ async function generate_new_votes() {
         while (retry) {
             let code = '';
 
-            for (let j = 0; j < 5; j++) {
+            for (let j = 0; j < 6; j++) {
                 code += code_characters.charAt(Math.floor(Math.random() * code_characters.length));
             }
 
@@ -139,11 +139,11 @@ const server = http.createServer((req, res) => {
                     res.end("Error: Invalid code");
 
                 } else if (parsedBody.kandidat && parsedBody.kandidat in candidates) {
-                    candidates[parsedBody.kandidat] += 1;
-
                     let votes = await get_votes();
                     votes[parsedBody.code].used = true;
                     await update_votes(votes);
+
+                    candidates[parsedBody.kandidat] += 1;
 
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end('Vote submitted');
