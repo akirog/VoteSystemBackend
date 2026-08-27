@@ -104,7 +104,8 @@ const server = http.createServer((req, res) => {
                 let codes = await get_votes();
 
                 res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end(codes);
+                res.write(codes);
+                res.end();
             }
 
         })
