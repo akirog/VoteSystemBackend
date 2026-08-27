@@ -90,7 +90,7 @@ const server = http.createServer((req, res) => {
     else if (req.method === 'GET' && req.url === '/codes') {
         let data = '';
 
-        req.on('data', (chunk) => { data += chunk; });
+        req.on('data', (chunk) => { data += chunk.toString(); });
 
         req.on('end', async () => {
             let body = JSON.parse(data);
@@ -104,7 +104,7 @@ const server = http.createServer((req, res) => {
                 let codes = await get_votes();
 
                 res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.write(codes);
+                res.write(JSON.stringify(codes));
                 res.end();
             }
 
