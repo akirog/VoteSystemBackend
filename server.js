@@ -7,8 +7,6 @@ const fs = require('node:fs/promises');
 const code_characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
 
-let code_counter = 0;
-
 async function get_votes() {
     const data = await fs.readFile('./codes.txt', 'utf8');
 
@@ -89,7 +87,7 @@ const server = http.createServer((req, res) => {
 
         res.end();
     }
-    else if (req.method === 'GET' && req.url === '/code') {
+    else if (req.method === 'GET' && req.url === '/codes') {
         let data = '';
 
         req.on('data', (chunk) => { data += chunk; });
@@ -102,17 +100,11 @@ const server = http.createServer((req, res) => {
             if (!body.password || body.password.length < 1 || body.password !== get_code_password) {
                 res.writeHead(200, {'Content-Type': 'text/plain'});
                 res.end("Error: Invalid password");
-            } else if (code_counter > get_votes().length) {
-                res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end("Error: No votes left");
             } else {
                 let codes = await get_votes();
 
-                let code = codes.keys()[code_counter];
-                code_counter++;
-
                 res.writeHead(200, {'Content-Type': 'text/plain'});
-                res.end("Code: " + code);
+                res.end(codes);
             }
 
         })
