@@ -92,7 +92,7 @@ let candidates = {
 
 const server = http.createServer((req, res) => {
 
-    if (req.method === 'GET' && req.url === '/') {
+    if (req.method === 'GET' && req.url === '/srv') {
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.write('Welcome to the homepage!');
 
