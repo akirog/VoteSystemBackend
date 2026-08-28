@@ -105,7 +105,7 @@ const server = http.createServer((req, res) => {
 
         res.end();
     }
-    else if (req.method === 'GET' && req.url === '/codes') {
+    else if (req.method === 'GET' && req.url === '/srv/codes') {
         let data = '';
 
         req.on('data', (chunk) => { data += chunk.toString(); });
@@ -128,7 +128,7 @@ const server = http.createServer((req, res) => {
 
         })
     }
-    else if (req.method === 'POST' && req.url === '/vote') {
+    else if (req.method === 'POST' && req.url === '/srv/vote') {
         let body = '';
 
 
@@ -182,7 +182,7 @@ const server = http.createServer((req, res) => {
 
 
         })
-    } else if (req.method === "GET" && req.url === '/class') {
+    } else if (req.method === "GET" && req.url === '/srv/class') {
         let data = '';
 
 
