@@ -182,6 +182,37 @@ const server = http.createServer((req, res) => {
 
 
         })
+    } else if (req.method === "GET" && req.url === '/class') {
+        let data = '';
+
+
+        req.on('data', (chunk) => {
+            data += chunk;
+        })
+
+
+        req.on('end', async () => {
+            let body = JSON.parse(data);
+
+            if (!body.code) {
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end("Error: No code given");
+                return;
+            } else if (!await get_vote(body.code)) {
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end("Error: Invalid code");
+                return;
+            } else if (!(await get_vote(body.code)).class) {
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end("Error: Code does not have class associated (if you get this something is wrong)");
+                return;
+            }
+
+            let klasse = (await get_vote(body.code)).class;
+
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end(klasse + '\n');
+        })
     }
     // Handle missing routes (404 Not Found)
     else {
