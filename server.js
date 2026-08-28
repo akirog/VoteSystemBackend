@@ -31,7 +31,8 @@ async function update_votes(data) {
     await fs.writeFile('./codes.txt', JSON.stringify(data, null, '\t'));
 }
 
-let generate_votes = false;
+let generate_votes = true;
+const classes = ["stit", "stmp", "it", "mp"];
 
 if (generate_votes) {
     generate_new_votes().then();
@@ -40,7 +41,7 @@ if (generate_votes) {
 async function generate_new_votes() {
     let votes = {};
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 400; i++) {
         let retry = true;
         let vote = {};
 
@@ -53,7 +54,7 @@ async function generate_new_votes() {
 
             vote = {
                 "code": code,
-                "class": Math.floor(i/100 * 4),
+                "class": classes[Math.floor(i/400 * 4)],
                 "used": false,
             }
 
@@ -71,8 +72,22 @@ async function generate_new_votes() {
 
 
 let candidates = {
-    "kandidat1": 0,
-    "kandidat2": 0,
+    "stmp": {
+        "kandidat1": 0,
+        "kandidat2": 0,
+    },
+    "stit": {
+        "kandidat1": 0,
+        "kandidat2": 0,
+    },
+    "mp": {
+        "kandidat1": 0,
+        "kandidat2": 0,
+    },
+    "it": {
+        "kandidat1": 0,
+        "kandidat2": 0,
+    }
 };
 
 const server = http.createServer((req, res) => {
@@ -81,8 +96,11 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, {'Content-Type': 'text/plain'});
         res.write('Welcome to the homepage!');
 
-        for (let k in candidates) {
-            res.write('\n' + k + ' : ' + candidates[k]);
+        for (let c in candidates) {
+            res.write('\n' + c + ':');
+            for (let k in candidates[c]) {
+                res.write('\n\t' + k + ' : ' + candidates[c][k]);
+            }
         }
 
         res.end();
@@ -125,18 +143,25 @@ const server = http.createServer((req, res) => {
                 if (!parsedBody) {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end("Error: Invalid body");
+
+                    return;
                 }
 
-                if (!parsedBody.code || !get_vote(parsedBody.code) || get_vote(parsedBody.code).used) {
+                if (!parsedBody.code || await get_vote(parsedBody.code) == null || (await get_vote(parsedBody.code)).used) {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end("Error: Invalid code");
 
-                } else if (parsedBody.kandidat && parsedBody.kandidat in candidates) {
-                    let votes = await get_votes();
+                    return;
+                }
+
+                let votes = await get_votes();
+                let vote = votes[parsedBody.code];
+
+                if (parsedBody.kandidat && parsedBody.kandidat in candidates[vote.class]) {
                     votes[parsedBody.code].used = true;
                     await update_votes(votes);
 
-                    candidates[parsedBody.kandidat] += 1;
+                    candidates[vote.class][parsedBody.kandidat] += 1;
 
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end('Vote submitted');
