@@ -17,11 +17,11 @@ async function get_votes() {
     return JSON.parse(data);
 }
 
-function get_vote(id) {
-    let votes = get_votes();
+async function get_vote(id) {
+    let votes = await get_votes();
 
     if (!votes[id]) {
-        return {};
+        return null;
     } else {
         return votes[id];
     }
