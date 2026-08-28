@@ -127,7 +127,7 @@ const server = http.createServer((req, res) => {
                     res.end("Error: Invalid body");
                 }
 
-                if (!parsedBody.code || !get_vote(parseInt(parsedBody.code)) || get_vote(parseInt(parsedBody.code)).used) {
+                if (!parsedBody.code || !get_vote(parsedBody.code) || get_vote(parsedBody.code).used) {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     res.end("Error: Invalid code");
 
