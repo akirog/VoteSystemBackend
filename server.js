@@ -115,7 +115,7 @@ const server = http.createServer((req, res) => {
 
 
         req.on('data', (chunk) => {
-            body += chunk.toString();
+            body += chunk;
         })
 
         req.on('end', async () => {
